@@ -2,50 +2,57 @@
 
 import numpy as np
 import os, sys, glob
-
+import tensorflow as tf
+import pickle
+from configs.config import config
 
 class DataGenerator:
     def __init__(self, config):
         self.config = config
-        # get mode, 'train' and 'val' and set the self.mode or use the config? 
+        # get mode, 'train' and 'val' and set the self.mode or use the config?
 
-    def list_tf_records(self, datadir):
-    	'''A helper function to list the tfrecords file in the data dir.'''
-    	return glob.glob(datadir + "*.tfrecords")
+        data_file = open(self.config['mnist-data'], 'rb')
+        u = pickle._Unpickler(data_file)
+        u.encoding = 'latin1'
+        self.train_data, self.validate_data, self.test_data = u.load()
 
-    def decode(serialized_example):
-	    features = tf.parse_single_example(serialized_example,
-	                                       features={
-	                                           'image_raw': tf.FixedLenFeature([], tf.string),
-	                                           'label': tf.FixedLenFeature([], tf.int64),
-	                                       })
-	    image = tf.decode_raw(features['image_raw'], tf.uint8)
-	    label = tf.cast(features['label'], tf.int32)
-	    #one_hot = tf.one_hot(label, NUM_CLASSES)
-	    return image, label
+    def train_gen(self):
+        i = 0
+        while True:
+            yield (self.train_data[0][i], self.train_data[1][i])
+            i += 1
 
 
-	def load(self, mode):
-		
-		filenames = tf.placeholder(tf.string, shape=[None])
-		dataset = tf.data.TFRecordDataset(filenames)
-		dataset = dataset.map(decode)
-		dataset = dataset.shuffle(buffer_size=10000)
-		dataset = dataset.batch(32)
-		iterator = dataset.make_initializable_iterator()
+    def load(self, mode):
+        print("Trying to Create Iterator for ", mode, "mode")
+        if mode == 'train':
+            dataset = tf.data.Dataset.from_generator(self.train_gen,
+                                                     (tf.float32, tf.int64))
+            dataset = dataset.shuffle(buffer_size=50000)
+        elif mode == 'test':
+            dataset = tf.data.Dataset.from_generator(self.test_gen,
+                                                     (tf.float32, tf.int64))
+            dataset = dataset.shuffle(buffer_size=10000)
 
-		# You can feed the initializer with the appropriate filenames for the current
-		# phase of execution, e.g. training vs. validation.
+        #dataset = dataset.batch(config['batch_size'])
 
-		# Initialize `iterator` with training data.
-		
-		training_filenames = self.list_tf_records(config['traindatadir'])
-		
-		#way to load the dataset.
-		#sess.run(iterator.initializer, feed_dict={filenames: training_filenames})
+        print("dataset:", dataset)
+        iterator = dataset.make_initializable_iterator()
+        print ("Returning Iterator")
+        return iterator
 
-		# Initialize `iterator` with validation data.
-		validation_filenames = self.list_tf_records(config['valdatadir'])
+if __name__ == '__main__':
+    print("Verifying Dataset")
+    data_gen = DataGenerator(config)
+    iterator = data_gen.load('train')
 
-		return iterator, training_filenames, validation_filenames
-		
+    with tf.Session() as sess:
+        sess.run(iterator.initializer)
+        next_element = iterator.get_next()
+        while (True):
+            try:
+                data_point = sess.run(next_element)
+                print(data_point)
+            except Exception as e:
+                print(e)
+                break
