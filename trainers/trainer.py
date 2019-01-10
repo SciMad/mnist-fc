@@ -5,7 +5,6 @@ from dataset.dataset import DataGenerator
 from configs.config import config, layers_details
 
 
-
 class MNISTTrainer(BaseTrain):
     def __init__(self, sess, model, data, config, logger):
         super(MNISTTrainer, self).__init__(sess, model, data, config, logger)
