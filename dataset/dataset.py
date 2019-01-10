@@ -6,6 +6,7 @@ import tensorflow as tf
 import pickle
 from configs.config import config
 
+
 class DataGenerator:
     def __init__(self, config):
         self.config = config
