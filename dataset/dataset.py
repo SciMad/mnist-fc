@@ -1,7 +1,4 @@
 '''to work on the dataset generator'''
-
-import numpy as np
-import os, sys, glob
 import tensorflow as tf
 import pickle
 from configs.config import config
