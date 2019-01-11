@@ -12,16 +12,16 @@ class MNIST_Model(BaseModel):
     def build_model(self):
         # here you build the tensorflow graph of any model you want and also define the loss.
 
-        self.learning_rate = tf.placeholder(tf.float32, shape=(),
+        self.learning_rate = tf.placeholder(tf.float32, shape=[],
                                             name='learning_rate')
 
         self.X = tf.placeholder(tf.float32,
-                                shape=[self.config["batch_size"]] + list(
-                                    self.config["input_shape"]),
+                                shape=self.config["input_shape"],
                                 name='input_image_vector')
+        print("This is self.X", self.X)
         self.onehot_labels = tf.placeholder(tf.float32,
-                                            shape=[self.config["batch_size"]] + list(
-                                                self.config["output_shape"]),
+                                            shape=[self.config["batch_size"],
+                                                   self.config["num_classes"]],
                                             name='output_layer')
         self.Y = tf.placeholder(tf.float32,
                                 shape=[self.config["batch_size"]],
