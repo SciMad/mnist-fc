@@ -23,7 +23,8 @@ class MNISTTrainer(BaseTrain):
         self.next_element = self.iterator.get_next()
 
         i = 0
-        while i<10000:
+        while i<50000//self.config['batch_size']:#400: #
+            print(50000//self.config['batch_size'], "steps needs to be run")
             i += 1
             if i%100 ==0: print("----------On Step:", i, "---------")
             self.train_step()
@@ -46,7 +47,7 @@ class MNISTTrainer(BaseTrain):
         # print("batch_labels", batch_labels)
         # print("batch_onehot_labels", batch_onehot_labels)
 
-        loss, _optimiszation = self.sess.run([self.model.loss, self.model.optimization],
+        loss, _optimization, accuracy = self.sess.run([self.model.loss, self.model.optimization, model.accuracy],
                                      feed_dict={
                                          self.model.X: batch_images,
                                          self.model.onehot_labels:
@@ -55,7 +56,7 @@ class MNISTTrainer(BaseTrain):
                                              self.config['learning_rate']
                                      })
 
-        print(loss)
+        print("Loss:", loss, "Accuracy:", accuracy)
 
 if __name__ == '__main__':
 
@@ -64,6 +65,11 @@ if __name__ == '__main__':
     iterator = data_gen.load('train')
     with tf.Session() as sess:
         mnist_trainer = MNISTTrainer(sess, model, data_gen, config, None)
-        mnist_trainer.train_epoch()
+        epoch = 0
+        while epoch < config['num_epoch']:
+            mnist_trainer.train_epoch()
+            epoch += 1
+            print("Trained for", epoch, "epochs.")
+    print("Training Completed!")
 
 

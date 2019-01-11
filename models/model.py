@@ -35,6 +35,7 @@ class MNIST_Model(BaseModel):
         #This gives the logits
         layer_3_FC = tf.contrib.layers.fully_connected(layer_2_FC,
                                                        config['num_classes'])
+
         loss_function = tf.nn.softmax_cross_entropy_with_logits(
             logits=layer_3_FC, labels=self.onehot_labels)
 
@@ -42,6 +43,9 @@ class MNIST_Model(BaseModel):
         optimizer = tf.train.GradientDescentOptimizer(
             self.learning_rate)
         self.optimization = optimizer.minimize(self.loss)
+        top_1_correct = tf.equal(tf.argmax(layer_3_FC, 1),
+                                 tf.argmax(self.onehot_labels, 1))
+        self.accuracy = tf.reduce_mean(tf.cast(top_1_correct, tf.float32))
 
     def init_saver(self):
         # here you initialize the tensorflow saver that will be used in saving the checkpoints.
