@@ -2,9 +2,9 @@
 NUM_CLASSES = 1000
 config = {
             "mnist-data": "../data/mnist.pkl",
-            "batch_size": 1,
-            "learning_rate": 0.01,
-            "input_shape": (None, 784, 1),
+            "batch_size": 2,
+            "learning_rate": 0.0001,
+            "input_shape": (None, 784),
             "output_shape": (None, NUM_CLASSES),
             "num_epoch" : 400,
             "checkpoint_path": "../data/output/",
