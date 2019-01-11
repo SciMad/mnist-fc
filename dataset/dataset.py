@@ -26,13 +26,14 @@ class DataGenerator:
         if mode == 'train':
             dataset = tf.data.Dataset.from_generator(self.train_gen,
                                                      (tf.float32, tf.int64))
-            dataset = dataset.shuffle(buffer_size=50000)
+            dataset = dataset.shuffle(
+                buffer_size=50000//self.config['batch_size'])
         elif mode == 'test':
             dataset = tf.data.Dataset.from_generator(self.test_gen,
                                                      (tf.float32, tf.int64))
-            dataset = dataset.shuffle(buffer_size=10000)
-
-        #dataset = dataset.batch(config['batch_size'])
+            dataset = dataset.shuffle(
+                buffer_size=10000//self.config['batch_size'])
+        dataset = dataset.batch(config['batch_size'])
 
         print("dataset:", dataset)
         iterator = dataset.make_initializable_iterator()
@@ -47,10 +48,14 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         sess.run(iterator.initializer)
         next_element = iterator.get_next()
-        while (True):
+        i = 0
+        while True:
             try:
+                i = i +1
+                print("datapoint has been created", i, "time(s).")
                 data_point = sess.run(next_element)
                 print(data_point)
             except Exception as e:
+                print("Caught EXCEPTION!!")
                 print(e)
                 break
