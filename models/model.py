@@ -19,9 +19,12 @@ class MNIST_Model(BaseModel):
                                 shape=[self.config["batch_size"]] + list(
                                     self.config["input_shape"]),
                                 name='input_image_vector')
+        self.onehot_labels = tf.placeholder(tf.float32,
+                                            shape=[self.config["batch_size"]] + list(
+                                                self.config["output_shape"]),
+                                            name='output_layer')
         self.Y = tf.placeholder(tf.float32,
-                                shape=[self.config["batch_size"]] + list(
-                                    self.config["output_shape"]),
+                                shape=[self.config["batch_size"]],
                                 name='output_layer')
         layer_1_FC = tf.contrib.layers.fully_connected(self.X,
                                                        self.layer_details[
@@ -29,11 +32,16 @@ class MNIST_Model(BaseModel):
         layer_2_FC = tf.contrib.layers.fully_connected(layer_1_FC,
                                                        self.layer_details[
                                                            'FullyConnected_2'])
+        #This gives the logits
         layer_3_FC = tf.contrib.layers.fully_connected(layer_2_FC,
-                                                       self.layer_details[
-                                                           'FullyConnected_3'])
+                                                       config['num_classes'])
+        loss_function = tf.nn.softmax_cross_entropy_with_logits(
+            logits=layer_3_FC, labels=self.onehot_labels)
 
-        pass
+        self.loss = tf.reduce_mean(loss_function)
+        optimizer = tf.train.GradientDescentOptimizer(
+            self.learning_rate)
+        self.optimization = optimizer.minimize(self.loss)
 
     def init_saver(self):
         # here you initialize the tensorflow saver that will be used in saving the checkpoints.
